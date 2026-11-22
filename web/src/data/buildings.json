@@ -33,44 +33,44 @@
       "name": "教学1#",
       "category": "teaching",
       "status": "built",
-      "floors": 5,
-      "height_m": 20,
+      "floors": 6,
+      "height_m": 23.5,
       "rect": { "x": -80, "z": 90, "w": 70, "d": 45, "rot": 0 },
       "entrance": { "x": -80, "z": 66 },
-      "description": "公共教学楼，位于中轴西侧北段，以公共基础课教室为主。"
+      "description": "6 层公共教学楼，位于中轴西侧北段，A 区以北侧上课教室为主。"
     },
     {
       "id": "teach-2",
       "name": "教学2#",
       "category": "teaching",
       "status": "built",
-      "floors": 5,
-      "height_m": 20,
+      "floors": 6,
+      "height_m": 23.5,
       "rect": { "x": -80, "z": 155, "w": 70, "d": 45, "rot": 0 },
       "entrance": { "x": -80, "z": 131 },
-      "description": "公共教学楼，位于中轴西侧南段，与教学 1# 组成教学组团。"
+      "description": "6 层公共教学楼，位于中轴西侧南段，B 区位于南侧，与教学 1# 组成教学组团。"
     },
     {
       "id": "lab-1",
       "name": "实验楼1#",
       "category": "lab",
       "status": "built",
-      "floors": 4,
-      "height_m": 16,
-      "rect": { "x": 80, "z": 90, "w": 60, "d": 40, "rot": 0 },
-      "entrance": { "x": 80, "z": 69 },
-      "description": "实验楼，位于中轴东侧北段，承担基础实验教学。"
+      "floors": 6,
+      "height_m": 23.5,
+      "rect": { "x": 80, "z": 90, "w": 50, "d": 30, "rot": 0 },
+      "entrance": { "x": 80, "z": 75 },
+      "description": "6 层实验楼，位于中轴东侧北段，标准层约 1,438 m²，承担基础实验教学。"
     },
     {
       "id": "lab-2",
       "name": "实验楼2#",
       "category": "lab",
       "status": "built",
-      "floors": 5,
-      "height_m": 20,
-      "rect": { "x": 80, "z": 155, "w": 60, "d": 40, "rot": 0 },
-      "entrance": { "x": 80, "z": 134 },
-      "description": "实验楼，位于中轴东侧南段，与实验楼 1# 相邻。"
+      "floors": 6,
+      "height_m": 23.5,
+      "rect": { "x": 80, "z": 155, "w": 50, "d": 30, "rot": 0 },
+      "entrance": { "x": 80, "z": 140 },
+      "description": "6 层实验楼，位于中轴东侧南段，窗洞规整，与实验楼 1# 相邻。"
     },
     {
       "id": "library",
@@ -78,11 +78,11 @@
       "alias": "图文信息中心",
       "category": "library",
       "status": "built",
-      "floors": 6,
-      "height_m": 32,
-      "rect": { "x": 0, "z": 320, "w": 90, "d": 70, "rot": 0 },
-      "entrance": { "x": 0, "z": 284 },
-      "description": "图书馆（图文信息中心），位于中轴南端，是校园的标志性建筑。"
+      "floors": 5,
+      "height_m": 24,
+      "rect": { "x": 0, "z": 320, "w": 58, "d": 58, "rot": 0 },
+      "entrance": { "x": 0, "z": 291 },
+      "description": "图书馆（图文信息中心），5 层、总建筑面积约 23,000 m²，位于中轴南端，是校园的标志性建筑。"
     },
     {
       "id": "art-center",
@@ -399,9 +399,9 @@
       "status": "built",
       "floors": 2,
       "height_m": 16,
-      "rect": { "x": -300, "z": 40, "w": 80, "d": 50, "rot": 0 },
-      "entrance": { "x": -300, "z": 66 },
-      "description": "体育馆，位于校园西北部，紧邻田径场。"
+      "rect": { "x": -380, "z": 45, "w": 80, "d": 50, "rot": 0 },
+      "entrance": { "x": -380, "z": 71 },
+      "description": "体育馆，位于校园西北部，紧邻田径场，屋顶为大跨钢结构。"
     },
     {
       "id": "training-center",

@@ -31,7 +31,7 @@
     }
   ],
   "tracks": [
-    { "id": "track-main", "kind": "track", "x": -260, "z": 160, "w": 100, "d": 180, "rot": 0 },
+    { "id": "track-main", "kind": "track", "x": -260, "z": 110, "w": 92.5, "d": 177, "rot": 0 },
     { "id": "field-second", "kind": "field", "x": 105, "z": 685, "w": 90, "d": 50, "rot": 0 },
     { "id": "basketball", "kind": "basketball", "x": -150, "z": 120, "w": 60, "d": 50, "rot": 0 }
   ],
@@ -45,15 +45,15 @@
     { "id": "south-lawn", "rect": { "x": 180, "z": 680, "w": 220, "d": 50 }, "count": 20, "seed": 17 }
   ],
   "corridors": [
-    { "id": "corridor-west", "x": -52, "z": 40, "w": 9, "d": 46, "side": -1, "motto": "博学笃行" },
-    { "id": "corridor-east", "x": 52, "z": 40, "w": 9, "d": 46, "side": 1, "motto": "崇德尚学" }
+    { "id": "corridor-west", "x": -31, "z": 130, "w": 9, "d": 120, "side": -1, "motto": "博学笃行", "courtyard": true, "bays": 34 },
+    { "id": "corridor-east", "x": 31, "z": 130, "w": 9, "d": 120, "side": 1, "motto": "崇德尚学", "courtyard": true, "bays": 34 }
   ],
   "areaLabels": [
     { "id": "wenmai-lake", "name": "文脉湖", "x": 145, "z": 330, "y": 5 },
     { "id": "wenhan-plaza", "name": "文翰广场", "x": 0, "z": 240, "y": 4 },
     { "id": "south-life", "name": "南苑生活区", "x": -150, "z": 600, "y": 4 },
-    { "id": "track-main-label", "name": "第一运动场", "x": -260, "z": 160, "y": 4 },
-    { "id": "corridor-east", "name": "文化长廊", "x": 52, "z": 40, "y": 5 },
-    { "id": "corridor-west", "name": "文化长廊", "x": -52, "z": 40, "y": 5 }
+    { "id": "track-main-label", "name": "第一运动场", "x": -260, "z": 110, "y": 4 },
+    { "id": "corridor-east", "name": "文化长廊", "x": 31, "z": 130, "y": 5 },
+    { "id": "corridor-west", "name": "文化长廊", "x": -31, "z": 130, "y": 5 }
   ]
 }

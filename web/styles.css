@@ -52,6 +52,30 @@ body {
   -webkit-backdrop-filter: blur(16px) saturate(120%);
 }
 
+.panel-hide {
+  appearance: none;
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--muted);
+  font: inherit;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.18s ease, color 0.18s ease;
+}
+
+.panel-hide:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.12);
+}
+
 /* 品牌 */
 .brand {
   top: 18px;
@@ -59,7 +83,13 @@ body {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px 18px 12px 12px;
+  padding: 12px 40px 12px 12px;
+}
+
+.brand > .panel-hide {
+  position: absolute;
+  top: 8px;
+  right: 8px;
 }
 
 .brand-mark {
@@ -144,6 +174,12 @@ body {
   color: var(--gold-strong);
 }
 
+.toolbar .panel-hide {
+  align-self: center;
+  margin-left: 2px;
+  font-size: 14px;
+}
+
 kbd {
   font-family: inherit;
   font-size: 10px;
@@ -173,6 +209,12 @@ kbd {
   color: var(--muted);
 }
 
+.panel-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .help h2 button {
   appearance: none;
   border: 0;
@@ -182,6 +224,22 @@ kbd {
   font-size: 11px;
   cursor: pointer;
   padding: 2px 0;
+}
+
+.help h2 .panel-hide {
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.help h2 .panel-hide:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.12);
 }
 
 .help-body.collapsed {
@@ -218,8 +276,8 @@ kbd {
 
 /* 小地图 */
 .minimap-panel {
-  right: 18px;
-  bottom: 18px;
+  top: 100px;
+  left: 18px;
   width: 258px;
   padding: 9px 9px 8px;
 }
@@ -232,6 +290,18 @@ kbd {
   font-size: 11px;
   letter-spacing: 1px;
   color: var(--muted);
+}
+
+.map-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.minimap-panel header .panel-hide {
+  width: 20px;
+  height: 20px;
+  font-size: 13px;
 }
 
 .compass {
@@ -463,6 +533,37 @@ kbd {
   transform: translateX(-50%) translateY(0);
 }
 
+/* 隐藏面板后的恢复入口 */
+#ui-restore {
+  position: fixed;
+  z-index: 20;
+  right: 18px;
+  bottom: 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 15px;
+  border-radius: 999px;
+  border: 1px solid rgba(242, 179, 92, 0.35);
+  background: rgba(10, 18, 20, 0.88);
+  color: var(--gold-strong);
+  font: inherit;
+  font-size: 12px;
+  letter-spacing: 0.4px;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+#ui-restore:hover {
+  background: rgba(242, 179, 92, 0.18);
+}
+
+#ui-restore kbd {
+  opacity: 0.8;
+}
+
 /* 加载层 */
 #loading {
   position: fixed;
@@ -542,7 +643,12 @@ kbd {
   .brand {
     top: 10px;
     left: 10px;
-    padding: 8px 12px 8px 8px;
+    padding: 8px 34px 8px 8px;
+  }
+
+  .brand > .panel-hide {
+    top: 6px;
+    right: 6px;
   }
 
   .brand-mark {
@@ -578,10 +684,12 @@ kbd {
   }
 
   .minimap-panel {
-    right: 8px;
-    bottom: 8px;
-    transform: scale(0.86);
-    transform-origin: bottom right;
+    top: 72px;
+    left: 8px;
+    right: auto;
+    bottom: auto;
+    transform: scale(0.8);
+    transform-origin: top left;
   }
 
   .info-card {
@@ -595,11 +703,26 @@ kbd {
   }
 
   #toast {
-    bottom: 232px;
+    bottom: 28px;
+  }
+
+  #ui-restore {
+    top: 58px;
+    right: 10px;
+    bottom: auto;
+    padding: 7px 12px;
+    font-size: 11px;
   }
 
   #hint {
     display: none;
+  }
+}
+
+@media (max-height: 700px) and (pointer: fine) {
+  .minimap-panel {
+    transform: scale(0.82);
+    transform-origin: top left;
   }
 }
 

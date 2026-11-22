@@ -29,8 +29,8 @@ export class CampusWorld {
     this.camera = new THREE.PerspectiveCamera(
       65,
       viewWidth / viewHeight,
-      0.1,
-      3400
+      0.5,
+      3600
     );
     this.camera.rotation.order = "YXZ";
     this.camera.position.set(this.spawn.x, this.spawn.eyeHeight ?? 1.7, this.spawn.z);
@@ -53,7 +53,7 @@ export class CampusWorld {
     this.initRenderer();
 
     onProgress("铺设地面与道路", 15);
-    this.ground = buildGround(this.campus);
+    this.ground = buildGround(this.campus, this.quality);
     this.scene.add(this.ground.group);
     await tick();
 
@@ -90,7 +90,9 @@ export class CampusWorld {
     this.renderer = new THREE.WebGLRenderer({
       canvas: this.canvas,
       antialias: !this.quality.mobile,
-      powerPreference: "high-performance"
+      powerPreference: "high-performance",
+      // 鸟瞰时相机距离可达 1 km，普通深度缓冲难以区分贴地的道路、水面与操场画线。
+      logarithmicDepthBuffer: true
     });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, this.quality.maxPixelRatio));
     this.renderer.setSize(window.innerWidth, window.innerHeight);

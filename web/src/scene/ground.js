@@ -102,7 +102,8 @@ function addDashes(group, a, b, y, opacity = 0.5) {
     opacity,
     depthWrite: false,
     polygonOffset: true,
-    polygonOffsetFactor: -2
+    polygonOffsetFactor: -3,
+    polygonOffsetUnits: -3
   });
 
   const geometry = new THREE.PlaneGeometry(length, 0.5);
@@ -113,21 +114,36 @@ function addDashes(group, a, b, y, opacity = 0.5) {
   group.add(mesh);
 }
 
-function ellipseRingGeometry(outerW, outerD, inset) {
-  const shape = new THREE.Shape();
-  shape.absellipse(0, 0, outerW / 2, outerD / 2, 0, Math.PI * 2, false, 0);
-  const hole = new THREE.Path();
-  hole.absellipse(0, 0, outerW / 2 - inset, outerD / 2 - inset, 0, Math.PI * 2, true, 0);
-  shape.holes.push(hole);
-  const geometry = new THREE.ShapeGeometry(shape, 48);
+/** 标准田径场轮廓：两条直道 + 两个半圆，长轴沿 z。 */
+function stadiumOutline(width, depth, segments = 28) {
+  const radius = width / 2;
+  const half = Math.max(0, depth - width) / 2;
+  const points = [];
+  for (let i = 0; i <= segments; i += 1) {
+    const angle = (i / segments) * Math.PI;
+    points.push([Math.cos(angle) * radius, -half - Math.sin(angle) * radius]);
+  }
+  for (let i = 0; i <= segments; i += 1) {
+    const angle = Math.PI + (i / segments) * Math.PI;
+    points.push([Math.cos(angle) * radius, half - Math.sin(angle) * radius]);
+  }
+  return points;
+}
+
+function stadiumGeometry(width, depth) {
+  const outline = stadiumOutline(width, depth);
+  const shape = new THREE.Shape(outline.map(([x, z]) => new THREE.Vector2(x, -z)));
+  const geometry = new THREE.ShapeGeometry(shape);
   geometry.rotateX(-Math.PI / 2);
   return geometry;
 }
 
-function ellipseGeometry(w, d) {
-  const shape = new THREE.Shape();
-  shape.absellipse(0, 0, w / 2, d / 2, 0, Math.PI * 2, false, 0);
-  const geometry = new THREE.ShapeGeometry(shape, 48);
+function stadiumRingGeometry(width, depth, inset) {
+  const outer = stadiumOutline(width, depth);
+  const inner = stadiumOutline(width - inset * 2, depth - inset * 2);
+  const shape = new THREE.Shape(outer.map(([x, z]) => new THREE.Vector2(x, -z)));
+  shape.holes.push(new THREE.Path(inner.map(([x, z]) => new THREE.Vector2(x, -z)).reverse()));
+  const geometry = new THREE.ShapeGeometry(shape);
   geometry.rotateX(-Math.PI / 2);
   return geometry;
 }
@@ -164,17 +180,51 @@ function whiteLines(material) {
     group.add(new THREE.LineLoop(geometry, material));
   };
 
-  return { group, rectangle, segment, circle };
+  const loop = (points) => {
+    const geometry = new THREE.BufferGeometry().setFromPoints(
+      points.map(([x, z]) => new THREE.Vector3(x, 0, z))
+    );
+    group.add(new THREE.LineLoop(geometry, material));
+  };
+
+  return { group, rectangle, segment, circle, loop };
 }
+
+const LANE_WIDTH = 1.22;
+const LANE_COUNT = 8;
+const TRACK_INNER_RADIUS = 36.5;
 
 function buildTracks(campus) {
   const group = new THREE.Group();
   group.name = "tracks";
 
-  const trackMat = new THREE.MeshStandardMaterial({ color: 0xb0553f, roughness: 0.95 });
-  const fieldMat = new THREE.MeshStandardMaterial({ color: 0x5d8553, roughness: 1 });
-  const courtMat = new THREE.MeshStandardMaterial({ color: 0xa75f3d, roughness: 0.95 });
-  const lineMat = new THREE.LineBasicMaterial({ color: 0xf3f1e7, transparent: true, opacity: 0.85 });
+  const trackMat = new THREE.MeshStandardMaterial({
+    color: 0xb0553f,
+    roughness: 0.95,
+    polygonOffset: true,
+    polygonOffsetFactor: -2,
+    polygonOffsetUnits: -2
+  });
+  const fieldMat = new THREE.MeshStandardMaterial({
+    color: 0x5d8553,
+    roughness: 1,
+    polygonOffset: true,
+    polygonOffsetFactor: -1,
+    polygonOffsetUnits: -1
+  });
+  const courtMat = new THREE.MeshStandardMaterial({
+    color: 0xa75f3d,
+    roughness: 0.95,
+    polygonOffset: true,
+    polygonOffsetFactor: -2,
+    polygonOffsetUnits: -2
+  });
+  const lineMat = new THREE.LineBasicMaterial({
+    color: 0xf3f1e7,
+    transparent: true,
+    opacity: 0.85,
+    depthWrite: false
+  });
 
   for (const track of campus.tracks) {
     const node = new THREE.Group();
@@ -182,28 +232,46 @@ function buildTracks(campus) {
     node.rotation.y = -THREE.MathUtils.degToRad(track.rot ?? 0);
 
     if (track.kind === "track") {
-      const ring = new THREE.Mesh(ellipseRingGeometry(track.w, track.d, 8), trackMat);
-      ring.position.y = 0.04;
+      const laneWidth = (track.w / 2 - TRACK_INNER_RADIUS) / LANE_COUNT;
+      const ringInset = laneWidth * LANE_COUNT;
+      const straight = Math.max(0, track.d - track.w);
+
+      const ring = new THREE.Mesh(stadiumRingGeometry(track.w, track.d, ringInset), trackMat);
+      ring.position.y = 0.075;
       ring.receiveShadow = true;
       node.add(ring);
 
-      const infield = new THREE.Mesh(ellipseGeometry(track.w - 16, track.d - 16), fieldMat);
-      infield.position.y = 0.032;
+      const infield = new THREE.Mesh(
+        stadiumGeometry(track.w - ringInset * 2, track.d - ringInset * 2),
+        fieldMat
+      );
+      infield.position.y = 0.06;
       infield.receiveShadow = true;
       node.add(infield);
 
       const lines = whiteLines(lineMat);
-      lines.rectangle(0, 0, 30, 50);
-      lines.segment(-30, 0, 30, 0);
-      lines.circle(0, 0, 9);
-      lines.rectangle(0, -39, 20, 8);
-      lines.rectangle(0, 39, 20, 8);
-      lines.group.position.y = 0.07;
+      for (let lane = 0; lane <= LANE_COUNT; lane += 1) {
+        const radius = TRACK_INNER_RADIUS + lane * laneWidth;
+        lines.loop(stadiumOutline(radius * 2, straight + radius * 2));
+      }
+      lines.segment(-track.w / 2, 0, -TRACK_INNER_RADIUS, 0);
+
+      // 内场 68 m × 105 m 足球场
+      lines.rectangle(0, 0, 34, 52.5);
+      lines.segment(-34, 0, 34, 0);
+      lines.circle(0, 0, 9.15);
+      lines.rectangle(0, -44.25, 20.16, 8.25);
+      lines.rectangle(0, 44.25, 20.16, 8.25);
+      lines.rectangle(0, -49.75, 9.16, 2.75);
+      lines.rectangle(0, 49.75, 9.16, 2.75);
+      lines.circle(0, -41.5, 0.35, 10);
+      lines.circle(0, 41.5, 0.35, 10);
+      lines.group.position.y = 0.13;
       node.add(lines.group);
     } else if (track.kind === "basketball") {
       const court = new THREE.Mesh(new THREE.PlaneGeometry(track.w, track.d), courtMat);
       court.rotation.x = -Math.PI / 2;
-      court.position.y = 0.03;
+      court.position.y = 0.065;
       court.receiveShadow = true;
       node.add(court);
 
@@ -211,12 +279,12 @@ function buildTracks(campus) {
       lines.rectangle(0, 0, track.w / 2 - 1.5, track.d / 2 - 1.5);
       lines.segment(0, -track.d / 2 + 1.5, 0, track.d / 2 - 1.5);
       lines.circle(0, 0, 6);
-      lines.group.position.y = 0.06;
+      lines.group.position.y = 0.115;
       node.add(lines.group);
     } else {
       const field = new THREE.Mesh(new THREE.PlaneGeometry(track.w, track.d), fieldMat);
       field.rotation.x = -Math.PI / 2;
-      field.position.y = 0.03;
+      field.position.y = 0.06;
       field.receiveShadow = true;
       node.add(field);
 
@@ -224,7 +292,7 @@ function buildTracks(campus) {
       lines.rectangle(0, 0, track.w / 2 - 2, track.d / 2 - 2);
       lines.segment(0, -track.d / 2 + 2, 0, track.d / 2 - 2);
       lines.circle(0, 0, 6);
-      lines.group.position.y = 0.06;
+      lines.group.position.y = 0.115;
       node.add(lines.group);
     }
 
@@ -234,12 +302,19 @@ function buildTracks(campus) {
   return group;
 }
 
-function buildCorridors(campus) {
+function buildCorridors(campus, quality) {
   const group = new THREE.Group();
   group.name = "corridors";
 
   const stoneMat = new THREE.MeshStandardMaterial({ color: 0xc2bbad, roughness: 0.9 });
-  const woodMat = new THREE.MeshStandardMaterial({ color: 0x7a4a38, roughness: 0.82 });
+  const pavingMat = new THREE.MeshStandardMaterial({
+    color: 0xb6ada0,
+    roughness: 0.96,
+    polygonOffset: true,
+    polygonOffsetFactor: -1,
+    polygonOffsetUnits: -1
+  });
+  const woodMat = new THREE.MeshStandardMaterial({ color: 0x5b3b2e, roughness: 0.82 });
   const roofMat = new THREE.MeshStandardMaterial({ color: 0x46525a, roughness: 0.86 });
   const plaqueMat = new THREE.MeshStandardMaterial({ color: 0x5a2a22, roughness: 0.7 });
 
@@ -251,42 +326,126 @@ function buildCorridors(campus) {
     parent.add(mesh);
   };
 
-  for (const corridor of campus.corridors ?? []) {
-    const { x, z, w, d, side } = corridor;
-    const node = new THREE.Group();
-    node.name = corridor.id ?? "corridor";
+  const bayFactor = quality?.mobile ? 0.55 : 1;
 
+  /** axis = "z" 时沿南北展开，axis = "x" 时沿东西展开。 */
+  const addGallery = (x, z, w, d, side, bays, axis = "z") => {
+    const node = new THREE.Group();
     addBox(node, w, 0.18, d, x, 0.09, z, stoneMat, false);
     addBox(node, w - 1.6, 0.12, d - 1.2, x, 0.22, z, stoneMat, false);
 
-    const wallX = x + side * (w / 2 - 0.25);
-    addBox(node, 0.4, 1.5, d - 1, wallX, 0.93, z, woodMat);
+    const length = axis === "z" ? d : w;
+    const count = Math.max(2, Math.round((bays ?? length / 3.5) * bayFactor));
+    const step = (length - 4) / (count - 1);
 
-    const columnOffsets = [-w / 2 + 1.15, w / 2 - 1.15];
-    const columnCount = 11;
-    const step = (d - 5) / (columnCount - 1);
-    for (const offset of columnOffsets) {
-      for (let i = 0; i < columnCount; i += 1) {
-        const columnZ = z - (d - 5) / 2 + step * i;
-        addBox(node, 0.34, 3.3, 0.34, x + offset, 1.83, columnZ, woodMat);
+    if (axis === "z") {
+      const wallX = x + side * (w / 2 - 0.25);
+      addBox(node, 0.4, 1.5, d - 1, wallX, 0.93, z, woodMat);
+      for (const offset of [-w / 2 + 1.15, w / 2 - 1.15]) {
+        for (let i = 0; i < count; i += 1) {
+          addBox(node, 0.34, 4.3, 0.34, x + offset, 2.33, z - (d - 4) / 2 + step * i, woodMat);
+        }
+        addBox(node, 0.32, 0.34, d - 2, x + offset, 4.48, z, woodMat);
       }
-      addBox(node, 0.32, 0.34, d - 2, x + offset, 3.48, z, woodMat);
+      for (let i = 0; i < count; i += 1) {
+        addBox(node, w - 1.4, 0.16, 0.2, x, 4.3, z - (d - 4) / 2 + step * i, woodMat, false);
+      }
+      addBox(node, w + 1.6, 0.32, d + 1.2, x, 4.78, z, roofMat);
+      addBox(node, w * 0.42, 0.36, d + 1.4, x, 5.06, z, roofMat);
+      addBox(node, 0.14, 1.25, 5.4, wallX - side * 0.24, 2.2, z, plaqueMat, false);
+    } else {
+      const wallZ = z + side * (d / 2 - 0.25);
+      if (side) addBox(node, w - 1, 1.5, 0.4, x, 0.93, wallZ, woodMat);
+      for (const offset of [-d / 2 + 1.15, d / 2 - 1.15]) {
+        for (let i = 0; i < count; i += 1) {
+          addBox(node, 0.34, 4.3, 0.34, x - (w - 4) / 2 + step * i, 2.33, z + offset, woodMat);
+        }
+        addBox(node, w - 2, 0.34, 0.32, x, 4.48, z + offset, woodMat);
+      }
+      for (let i = 0; i < count; i += 1) {
+        addBox(node, 0.2, 0.16, d - 1.4, x - (w - 4) / 2 + step * i, 4.3, z, woodMat, false);
+      }
+      addBox(node, w + 1.2, 0.32, d + 1.6, x, 4.78, z, roofMat);
+      addBox(node, w + 1.4, 0.36, d * 0.42, x, 5.06, z, roofMat);
     }
 
-    for (let i = 0; i < columnCount; i += 1) {
-      const rafterZ = z - (d - 5) / 2 + step * i;
-      addBox(node, w - 1.4, 0.16, 0.2, x, 3.3, rafterZ, woodMat, false);
-    }
-
-    addBox(node, w + 1.6, 0.32, d + 1.2, x, 3.78, z, roofMat);
-    addBox(node, w * 0.42, 0.36, d + 1.4, x, 4.06, z, roofMat);
-
-    for (const zOffset of [-11, 11]) {
-      addBox(node, 0.62, 0.44, 8, wallX - side * 0.55, 0.44, z + zOffset, woodMat);
-    }
-
-    addBox(node, 0.14, 1.25, 5.4, wallX - side * 0.24, 2.2, z, plaqueMat, false);
     group.add(node);
+  };
+
+  const addPavilion = (x, z, size, height, twoTier = false) => {
+    const node = new THREE.Group();
+    addBox(node, size + 1.4, 0.5, size + 1.4, x, 0.25, z, stoneMat);
+
+    const offset = size / 2 - 0.65;
+    const columnHeight = height * 0.58;
+    const offsets = size >= 12 ? [-offset, 0, offset] : [-offset, offset];
+    for (const dx of offsets) {
+      for (const dz of offsets) {
+        if (dx === 0 && dz === 0) continue;
+        addBox(node, 0.48, columnHeight, 0.48, x + dx, 0.5 + columnHeight / 2, z + dz, woodMat);
+      }
+    }
+
+    addBox(node, size, 0.3, size, x, 0.5 + columnHeight + 0.15, z, woodMat, false);
+    const eave = 0.5 + columnHeight + 0.5;
+    addBox(node, size + 2.6, 0.34, size + 2.6, x, eave, z, roofMat);
+
+    let peakBase = eave + 0.17;
+    let peakRadius = size * 0.72;
+    let peakHeight = height * 0.42;
+    if (twoTier) {
+      addBox(node, size * 0.56, height * 0.2, size * 0.56, x, eave + height * 0.1 + 0.2, z, woodMat, false);
+      addBox(node, size * 0.92, 0.3, size * 0.92, x, eave + height * 0.2 + 0.35, z, roofMat);
+      peakBase = eave + height * 0.2 + 0.5;
+      peakRadius = size * 0.54;
+      peakHeight = height * 0.34;
+    }
+
+    const peak = new THREE.Mesh(new THREE.ConeGeometry(peakRadius, peakHeight, 4), roofMat);
+    peak.rotation.y = Math.PI / 4;
+    peak.position.set(x, peakBase + peakHeight / 2, z);
+    peak.castShadow = true;
+    peak.receiveShadow = true;
+    node.add(peak);
+
+    group.add(node);
+  };
+
+  const wings = [];
+  for (const corridor of campus.corridors ?? []) {
+    addGallery(corridor.x, corridor.z, corridor.w, corridor.d, corridor.side ?? 1, corridor.bays, "z");
+    if (corridor.courtyard) wings.push(corridor);
+  }
+
+  if (wings.length >= 2) {
+    const minX = Math.min(...wings.map((c) => c.x - c.w / 2));
+    const maxX = Math.max(...wings.map((c) => c.x + c.w / 2));
+    const minZ = Math.min(...wings.map((c) => c.z - c.d / 2));
+    const maxZ = Math.max(...wings.map((c) => c.z + c.d / 2));
+    const innerMinX = Math.min(...wings.map((c) => Math.abs(c.x) - c.w / 2));
+    const crossW = innerMinX * 2;
+    const crossZ = [minZ + 4.5, maxZ - 4.5];
+    const middleZ = (minZ + maxZ) / 2;
+
+    group.add(
+      planarMesh(
+        [
+          [-innerMinX, crossZ[0] + 4.5],
+          [innerMinX, crossZ[0] + 4.5],
+          [innerMinX, crossZ[1] - 4.5],
+          [-innerMinX, crossZ[1] - 4.5]
+        ],
+        pavingMat,
+        0.045
+      )
+    );
+
+    for (const z of crossZ) {
+      addGallery(0, z, crossW, 9, z < middleZ ? -1 : 1, Math.round(crossW / 3.5), "x");
+      for (const x of [minX + 4.5, maxX - 4.5]) addPavilion(x, z, 8, 6.5);
+    }
+
+    addPavilion(0, maxZ - 22, 13, 11, true);
   }
 
   return group;
@@ -295,6 +454,8 @@ function buildCorridors(campus) {
 function buildLamps(campus) {
   const positions = [];
   for (let z = 56; z <= 344; z += 48) {
+    // 文化长廊院落范围内不再放中轴路灯，避免灯具穿入廊庑。
+    if (z > 64 && z < 200) continue;
     positions.push([-13, z], [13, z]);
   }
   for (let x = -170; x <= 170; x += 68) {
@@ -336,46 +497,47 @@ function buildWater(campus) {
   const group = new THREE.Group();
   group.name = "water";
 
+  // 单层水面：叠两层透明面在远距离会互相争深度，出现闪烁。
   const waterMat = new THREE.MeshStandardMaterial({
     color: 0x2f7189,
-    roughness: 0.22,
-    metalness: 0.15,
+    roughness: 0.12,
+    metalness: 0.08,
     transparent: true,
-    opacity: 0.94
+    opacity: 0.92,
+    depthWrite: false,
+    polygonOffset: true,
+    polygonOffsetFactor: -2,
+    polygonOffsetUnits: -2
   });
-  const innerMat = new THREE.MeshStandardMaterial({
-    color: 0x3f8ba3,
-    roughness: 0.18,
-    metalness: 0.12,
+  const islandMat = new THREE.MeshStandardMaterial({
+    color: 0x6f8a5c,
+    roughness: 1,
+    polygonOffset: true,
+    polygonOffsetFactor: -3,
+    polygonOffsetUnits: -3
+  });
+  const edgeMat = new THREE.LineBasicMaterial({
+    color: 0xd8e6e2,
     transparent: true,
-    opacity: 0.9
+    opacity: 0.55,
+    depthWrite: false
   });
-  const edgeMat = new THREE.LineBasicMaterial({ color: 0xd8e6e2, transparent: true, opacity: 0.55 });
 
   for (const polygon of campus.water ?? []) {
-    const surface = planarMesh(polygon, waterMat, 0.05);
-    group.add(surface);
+    group.add(planarMesh(polygon, waterMat, 0.09));
 
-    let cx = 0;
-    let cz = 0;
-    for (const [x, z] of polygon) {
-      cx += x;
-      cz += z;
-    }
-    cx /= polygon.length;
-    cz /= polygon.length;
-
-    const inner = polygon.map(([x, z]) => [cx + (x - cx) * 0.86, cz + (z - cz) * 0.86]);
-    group.add(planarMesh(inner, innerMat, 0.058));
-
-    const points = polygon.map(([x, z]) => new THREE.Vector3(x, 0.075, z));
+    const points = polygon.map(([x, z]) => new THREE.Vector3(x, 0.1, z));
     group.add(new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(points), edgeMat));
+  }
+
+  for (const polygon of campus.waterIslands ?? []) {
+    group.add(planarMesh(polygon, islandMat, 0.12));
   }
 
   return group;
 }
 
-export function buildGround(campus) {
+export function buildGround(campus, quality) {
   const group = new THREE.Group();
   group.name = "ground";
 
@@ -384,44 +546,69 @@ export function buildGround(campus) {
   groundGeometry.rotateX(-Math.PI / 2);
   const ground = new THREE.Mesh(
     groundGeometry,
-    new THREE.MeshStandardMaterial({ map: grassTexture, roughness: 1, metalness: 0 })
+    new THREE.MeshStandardMaterial({
+      map: grassTexture,
+      roughness: 1,
+      metalness: 0,
+      polygonOffset: true,
+      polygonOffsetFactor: 1,
+      polygonOffsetUnits: 1
+    })
   );
   ground.position.set(0, 0, 355);
   ground.receiveShadow = true;
   group.add(ground);
 
-  const asphaltMat = new THREE.MeshStandardMaterial({ color: 0x3f4950, roughness: 0.96 });
-  const sidewalkMat = new THREE.MeshStandardMaterial({ color: 0x9aa1a0, roughness: 0.95 });
-  const plazaMat = new THREE.MeshStandardMaterial({ color: 0xa79c8b, roughness: 0.93 });
-  const curbMat = new THREE.MeshStandardMaterial({ color: 0xb7b2a6, roughness: 0.9 });
+  // 所有路面站在同一条基准线上，靠 polygonOffset 分层；
+  // 若每条路各自抬几毫米，鸟瞰时交叉口会与草地争深度而闪烁。
+  const asphaltMat = new THREE.MeshStandardMaterial({
+    color: 0x3f4950,
+    roughness: 0.96,
+    polygonOffset: true,
+    polygonOffsetFactor: -2,
+    polygonOffsetUnits: -2
+  });
+  const sidewalkMat = new THREE.MeshStandardMaterial({
+    color: 0x9aa1a0,
+    roughness: 0.95,
+    polygonOffset: true,
+    polygonOffsetFactor: -1,
+    polygonOffsetUnits: -1
+  });
+  const plazaMat = new THREE.MeshStandardMaterial({
+    color: 0xa79c8b,
+    roughness: 0.93,
+    polygonOffset: true,
+    polygonOffsetFactor: -1,
+    polygonOffsetUnits: -1
+  });
 
   const roadsGroup = new THREE.Group();
   roadsGroup.name = "roads";
-  campus.roads.forEach((road, index) => {
-    const baseY = 0.018 + index * 0.0006;
+  campus.roads.forEach((road) => {
     for (let i = 0; i < road.points.length - 1; i += 1) {
       const a = road.points[i];
       const b = road.points[i + 1];
-      addStrip(roadsGroup, a, b, road.width + 7, sidewalkMat, baseY);
-      addStrip(roadsGroup, a, b, road.width, asphaltMat, baseY + 0.006);
-      addDashes(roadsGroup, a, b, baseY + 0.012);
+      addStrip(roadsGroup, a, b, road.width + 7, sidewalkMat, 0.03);
+      addStrip(roadsGroup, a, b, road.width, asphaltMat, 0.08);
+      addDashes(roadsGroup, a, b, 0.1);
     }
   });
   group.add(roadsGroup);
 
   for (const plaza of campus.plazas ?? []) {
-    group.add(planarMesh(plaza.polygon, plazaMat, 0.024));
-    const points = plaza.polygon.map(([x, z]) => new THREE.Vector3(x, 0.03, z));
+    group.add(planarMesh(plaza.polygon, plazaMat, 0.055));
+    const points = plaza.polygon.map(([x, z]) => new THREE.Vector3(x, 0.065, z));
     group.add(
       new THREE.LineLoop(
         new THREE.BufferGeometry().setFromPoints(points),
-        new THREE.LineBasicMaterial({ color: 0xd9d2c3, transparent: true, opacity: 0.4 })
+        new THREE.LineBasicMaterial({ color: 0xd9d2c3, transparent: true, opacity: 0.4, depthWrite: false })
       )
     );
   }
 
   group.add(buildTracks(campus));
-  group.add(buildCorridors(campus));
+  group.add(buildCorridors(campus, quality));
   group.add(buildWater(campus));
 
   const lamps = buildLamps(campus);

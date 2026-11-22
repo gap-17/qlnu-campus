@@ -5,17 +5,17 @@ const DEG = Math.PI / 180;
 
 const PRESETS = {
   day: {
-    sun: 2.55,
-    sunColor: 0xfff3df,
-    hemi: 0.95,
+    sun: 2.45,
+    sunColor: 0xfff0d8,
+    hemi: 1.0,
     hemiSky: 0xcfe8ff,
     hemiGround: 0x50604a,
     sky: 0xbfe3ff,
     fog: 0xd4ebff,
     fogNear: 320,
     fogFar: 1650,
-    elevation: 56,
-    azimuth: 185,
+    elevation: 32,
+    azimuth: 145,
     window: 0,
     star: 0
   },
@@ -129,7 +129,7 @@ export function createLighting(scene, quality) {
   const hemi = new THREE.HemisphereLight(0xcfe8ff, 0x50604a, 0.95);
   scene.add(hemi);
 
-  const sun = new THREE.DirectionalLight(0xfff3df, 2.5);
+  const sun = new THREE.DirectionalLight(0xfff0d8, 2.45);
   sun.castShadow = quality.shadows;
   sun.shadow.mapSize.set(quality.shadows ? 2048 : 1024, quality.shadows ? 2048 : 1024);
   sun.shadow.camera.left = -560;

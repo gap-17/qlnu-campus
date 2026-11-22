@@ -24,30 +24,68 @@
       <div id="crosshair" class="hidden" aria-hidden="true"></div>
       <div id="hint" aria-live="polite"></div>
 
-      <header class="panel brand">
+      <header class="panel brand" data-panel="brand">
         <div class="brand-mark">QLNU</div>
         <div class="brand-text">
           <h1>齐鲁师范学院</h1>
           <p>章丘校区 · 3D 校园 <span class="tag" id="build-tag">v0.1</span></p>
         </div>
+        <button
+          type="button"
+          class="panel-hide"
+          data-hide-panel
+          aria-label="隐藏校名面板"
+          title="隐藏校名面板"
+        >
+          ×
+        </button>
       </header>
 
-      <nav class="panel toolbar" id="mode-bar" aria-label="视角模式">
+      <nav class="panel toolbar" id="mode-bar" data-panel="mode" aria-label="视角模式">
         <button type="button" data-mode="walk" class="active">步行 <kbd>1</kbd></button>
         <button type="button" data-mode="fly">飞行 <kbd>2</kbd></button>
         <button type="button" data-mode="orbit">鸟瞰 <kbd>3</kbd></button>
+        <button
+          type="button"
+          class="panel-hide"
+          data-hide-panel
+          aria-label="隐藏视角模式"
+          title="隐藏视角模式"
+        >
+          ×
+        </button>
       </nav>
 
-      <nav class="panel toolbar time-bar" id="time-bar" aria-label="时间">
+      <nav class="panel toolbar time-bar" id="time-bar" data-panel="time" aria-label="时间">
         <button type="button" data-time="day" class="active">白天</button>
         <button type="button" data-time="dusk">黄昏</button>
         <button type="button" data-time="night">夜晚</button>
+        <button
+          type="button"
+          class="panel-hide"
+          data-hide-panel
+          aria-label="隐藏时间切换"
+          title="隐藏时间切换"
+        >
+          ×
+        </button>
       </nav>
 
-      <aside class="panel help" id="help">
+      <aside class="panel help" id="help" data-panel="help">
         <h2>
-          操作
-          <button type="button" id="help-toggle" aria-expanded="true">收起</button>
+          <span>操作</span>
+          <span class="panel-actions">
+            <button type="button" id="help-toggle" aria-expanded="true">收起</button>
+            <button
+              type="button"
+              class="panel-hide"
+              data-hide-panel
+              aria-label="隐藏操作说明"
+              title="隐藏操作说明"
+            >
+              ×
+            </button>
+          </span>
         </h2>
         <div class="help-body">
           <dl>
@@ -63,17 +101,30 @@
             <dd>查看准星处建筑</dd>
             <dt>1 2 3</dt>
             <dd>步行 / 飞行 / 鸟瞰</dd>
+            <dt>H</dt>
+            <dd>隐藏 / 显示界面</dd>
             <dt>Esc</dt>
             <dd>释放鼠标</dd>
           </dl>
-          <p class="help-note">点击画面进入鼠标控制；点击右下角地图可传送。</p>
+          <p class="help-note">点击画面进入鼠标控制；点击左上角地图可传送。按 H 可隐藏全部界面。</p>
         </div>
       </aside>
 
-      <section class="panel minimap-panel" aria-label="校园地图">
+      <section class="panel minimap-panel" data-panel="minimap" aria-label="校园地图">
         <header>
           <span>校园地图</span>
-          <span class="compass">上北 N</span>
+          <span class="map-meta">
+            <span class="compass">上北 N</span>
+            <button
+              type="button"
+              class="panel-hide"
+              data-hide-panel
+              aria-label="隐藏校园地图"
+              title="隐藏校园地图"
+            >
+              ×
+            </button>
+          </span>
         </header>
         <canvas id="minimap" width="240" height="210"></canvas>
         <p>点击地图传送 · 建筑可点选</p>
@@ -94,6 +145,10 @@
       </article>
 
       <div id="toast" role="status" aria-live="polite"></div>
+
+      <button type="button" id="ui-restore" hidden>
+        显示界面 <kbd>H</kbd>
+      </button>
 
       <div id="loading">
         <div class="loading-inner">

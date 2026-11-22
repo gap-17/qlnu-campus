@@ -7,6 +7,8 @@ export class Hud {
     this.toastEl = document.getElementById("toast");
     this.helpToggle = document.getElementById("help-toggle");
     this.helpBody = document.querySelector(".help-body");
+    this.panels = [...document.querySelectorAll("[data-panel]")];
+    this.restoreBtn = document.getElementById("ui-restore");
     this.toastTimer = 0;
 
     this.modeBar?.addEventListener("click", (event) => {
@@ -21,6 +23,24 @@ export class Hud {
 
     this.helpToggle?.addEventListener("click", () => this.toggleHelp());
 
+    for (const button of document.querySelectorAll("[data-hide-panel]")) {
+      button.addEventListener("click", () => {
+        const panel = button.closest("[data-panel]");
+        if (!panel) return;
+        panel.hidden = true;
+        this.syncRestore();
+      });
+    }
+
+    this.restoreBtn?.addEventListener("click", () => this.showPanels());
+
+    window.addEventListener("keydown", (event) => {
+      if (event.code !== "KeyH" || event.repeat) return;
+      if (event.ctrlKey || event.metaKey || event.altKey) return;
+      if (event.target instanceof HTMLElement && event.target.isContentEditable) return;
+      this.togglePanels();
+    });
+
     if (window.matchMedia("(pointer: coarse)").matches) {
       this.helpBody?.classList.add("collapsed");
       if (this.helpToggle) {
@@ -28,6 +48,26 @@ export class Hud {
         this.helpToggle.setAttribute("aria-expanded", "false");
       }
     }
+  }
+
+  syncRestore() {
+    if (!this.restoreBtn) return;
+    this.restoreBtn.hidden = !this.panels.some((panel) => panel.hidden);
+  }
+
+  hidePanels() {
+    for (const panel of this.panels) panel.hidden = true;
+    this.syncRestore();
+  }
+
+  showPanels() {
+    for (const panel of this.panels) panel.hidden = false;
+    this.syncRestore();
+  }
+
+  togglePanels() {
+    if (this.panels.some((panel) => panel.hidden)) this.showPanels();
+    else this.hidePanels();
   }
 
   toggleHelp(force) {

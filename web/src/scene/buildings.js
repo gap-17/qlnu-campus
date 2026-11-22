@@ -21,10 +21,10 @@ function getSignTexture() {
  * 让立面窗户按米数平铺：每 4m 一跨、3.4m 一层。
  * BoxGeometry 的 6 个面各有 4 个 UV 顶点，顺序 px nx py ny pz nz。
  */
-function scaleFacadeUv(geometry, w, h, d) {
+function scaleFacadeUv(geometry, w, h, d, floors) {
   const uv = geometry.attributes.uv;
   const repeatsU = [d, d, w, w, w, w].map((side) => Math.max(1, Math.round(side / TILE_W)));
-  const repeatsV = Math.max(1, Math.round(h / TILE_H));
+  const repeatsV = Math.max(1, Math.round(floors ?? h / TILE_H));
 
   for (let face = 0; face < 6; face += 1) {
     if (face === 2 || face === 3) continue;
@@ -87,12 +87,12 @@ function addFacadeHighlights(node, building, w, h, d) {
       node.add(step);
     }
 
-    const lantern = new THREE.Mesh(new THREE.BoxGeometry(24, 9, 22), glass);
-    lantern.position.set(0, h + 4.6, 0);
-    node.add(lantern);
+    const skylight = new THREE.Mesh(new THREE.BoxGeometry(w * 0.44, 1.6, d * 0.34), glass);
+    skylight.position.set(0, h + 0.8, 0);
+    node.add(skylight);
 
-    const cap = new THREE.Mesh(new THREE.BoxGeometry(27, 0.7, 25), getRoofMaterial("library"));
-    cap.position.set(0, h + 9.4, 0);
+    const cap = new THREE.Mesh(new THREE.BoxGeometry(w * 0.5, 0.5, d * 0.4), getRoofMaterial("library"));
+    cap.position.set(0, h + 1.85, 0);
     node.add(cap);
   }
 
@@ -154,7 +154,7 @@ function makeBlock(building) {
 
   const geometry = new THREE.BoxGeometry(w, h, d);
   geometry.translate(0, h / 2, 0);
-  scaleFacadeUv(geometry, w, h, d);
+  scaleFacadeUv(geometry, w, h, d, building.floors);
 
   const wall = getWallMaterial(building.category);
   const roof = getRoofMaterial(building.category);

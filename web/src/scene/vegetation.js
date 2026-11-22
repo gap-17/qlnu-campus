@@ -68,6 +68,15 @@ export function buildVegetation(campus, buildingColliders, quality) {
       3
     )
   );
+  const courtyardWings = (campus.corridors ?? []).filter((corridor) => corridor.courtyard);
+  if (courtyardWings.length >= 2) {
+    blockedCorridors.push({
+      minX: Math.min(...courtyardWings.map((corridor) => corridor.x - corridor.w / 2)),
+      maxX: Math.max(...courtyardWings.map((corridor) => corridor.x + corridor.w / 2)),
+      minZ: Math.min(...courtyardWings.map((corridor) => corridor.z - corridor.d / 2)),
+      maxZ: Math.max(...courtyardWings.map((corridor) => corridor.z + corridor.d / 2))
+    });
+  }
   const plazas = campus.plazas ?? [];
 
   const density = quality.mobile ? 0.45 : 1;
