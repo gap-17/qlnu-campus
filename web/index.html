@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>齐鲁师范学院 · 章丘校区 3D 校园</title>
+    <meta
+      name="description"
+      content="齐鲁师范学院章丘校区 3D 校园漫游：步行、飞行、鸟瞰、小地图传送与建筑信息卡（v0.1 体块示意）。"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <div id="app">
+      <canvas id="scene" aria-label="齐鲁师范学院章丘校区 3D 场景"></canvas>
+      <div id="crosshair" class="hidden" aria-hidden="true"></div>
+      <div id="hint" aria-live="polite"></div>
+
+      <header class="panel brand">
+        <div class="brand-mark">QLNU</div>
+        <div class="brand-text">
+          <h1>齐鲁师范学院</h1>
+          <p>章丘校区 · 3D 校园 <span class="tag" id="build-tag">v0.1</span></p>
+        </div>
+      </header>
+
+      <nav class="panel toolbar" id="mode-bar" aria-label="视角模式">
+        <button type="button" data-mode="walk" class="active">步行 <kbd>1</kbd></button>
+        <button type="button" data-mode="fly">飞行 <kbd>2</kbd></button>
+        <button type="button" data-mode="orbit">鸟瞰 <kbd>3</kbd></button>
+      </nav>
+
+      <nav class="panel toolbar time-bar" id="time-bar" aria-label="时间">
+        <button type="button" data-time="day" class="active">白天</button>
+        <button type="button" data-time="dusk">黄昏</button>
+        <button type="button" data-time="night">夜晚</button>
+      </nav>
+
+      <aside class="panel help" id="help">
+        <h2>
+          操作
+          <button type="button" id="help-toggle" aria-expanded="true">收起</button>
+        </h2>
+        <div class="help-body">
+          <dl>
+            <dt>W A S D</dt>
+            <dd>移动（步行 / 飞行）</dd>
+            <dt>鼠标</dt>
+            <dd>转动视角</dd>
+            <dt>Shift</dt>
+            <dd>加速</dd>
+            <dt>Space / Q</dt>
+            <dd>飞行升高 / 降低</dd>
+            <dt>E / 单击</dt>
+            <dd>查看准星处建筑</dd>
+            <dt>1 2 3</dt>
+            <dd>步行 / 飞行 / 鸟瞰</dd>
+            <dt>Esc</dt>
+            <dd>释放鼠标</dd>
+          </dl>
+          <p class="help-note">点击画面进入鼠标控制；点击右下角地图可传送。</p>
+        </div>
+      </aside>
+
+      <section class="panel minimap-panel" aria-label="校园地图">
+        <header>
+          <span>校园地图</span>
+          <span class="compass">上北 N</span>
+        </header>
+        <canvas id="minimap" width="240" height="210"></canvas>
+        <p>点击地图传送 · 建筑可点选</p>
+      </section>
+
+      <article class="panel info-card" id="info-card" hidden aria-live="polite">
+        <button type="button" class="close" id="info-close" aria-label="关闭">×</button>
+        <div class="badge" id="info-category"></div>
+        <h2 id="info-name"></h2>
+        <p class="alias" id="info-alias" hidden></p>
+        <dl class="facts">
+          <div><dt>编号</dt><dd id="info-id"></dd></div>
+          <div><dt>层数</dt><dd id="info-floors"></dd></div>
+          <div><dt>高度</dt><dd id="info-height"></dd></div>
+        </dl>
+        <p class="desc" id="info-desc"></p>
+        <button type="button" class="primary" id="info-teleport">传送到建筑门口</button>
+      </article>
+
+      <div id="toast" role="status" aria-live="polite"></div>
+
+      <div id="loading">
+        <div class="loading-inner">
+          <div class="loading-mark">QLNU · 3D</div>
+          <div class="loading-title">齐鲁师范学院 · 章丘校区</div>
+          <p id="loading-status">初始化…</p>
+          <div class="bar"><span id="loading-bar"></span></div>
+          <p class="loading-tip">
+            v0.1 体块示意版 · 依据校园平面图与公开资料近似还原
+          </p>
+        </div>
+      </div>
+
+      <noscript>
+        <p style="color: #fff; padding: 24px">本页面需要启用 JavaScript 才能显示 3D 校园。</p>
+      </noscript>
+    </div>
+    <script type="module" src="./src/main.js"></script>
+  </body>
+</html>

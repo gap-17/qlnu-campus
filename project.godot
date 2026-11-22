@@ -1,0 +1,54 @@
+; 齐鲁师范学院 · 校园漫游（Godot 4.7.1）
+; 根目录即 Godot 项目根目录，直接读取 web/src/data 下的校园数据。
+; 输入映射在 game/scripts/game_state.gd 中运行时注册，避免手写 InputEvent 序列化。
+
+config_version=5
+
+[application]
+
+config/name="齐鲁师范学院 · 校园漫游"
+config/description="章丘校区第三人称校园探索 v0.2"
+run/main_scene="res://game/scenes/Main.tscn"
+config/features=PackedStringArray("4.7", "GL Compatibility")
+boot_splash/show_image=false
+
+[autoload]
+
+GameState="*res://game/scripts/game_state.gd"
+CampusData="*res://game/scripts/campus_data.gd"
+
+[debug]
+
+file_logging/enable_file_logging=false
+file_logging/enable_file_logging.pc=false
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/size/window_width_override=1280
+window/size/window_height_override=720
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+
+[gui]
+
+theme/default_font_multichannel_signed_distance_field=true
+theme/default_font_generate_mipmaps=true
+
+[physics]
+
+3d/default_gravity=22.0
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+anti_aliasing/quality/msaa_3d=2
+environment/defaults/default_clear_color=Color(0.66, 0.78, 0.9, 1)
+textures/default_filters/use_nearest_mipmap_filter=false
+
+[layer_names]
+
+3d_physics/layer_1="World"
+3d_physics/layer_2="Player"

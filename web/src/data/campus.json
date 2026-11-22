@@ -1,0 +1,59 @@
+{
+  "meta": {
+    "version": "0.1",
+    "note": "校园约 900m × 770m；道路、水系、场地为平面图描图近似，后续可用 CAD 替换。"
+  },
+  "bounds": { "minX": -440, "maxX": 440, "minZ": -30, "maxZ": 740 },
+  "spawn": { "x": 0, "z": 10, "yawDeg": 180, "eyeHeight": 1.7 },
+  "roads": [
+    { "id": "wenbo", "points": [[-440, -20], [440, -20]], "width": 16 },
+    { "id": "mingbu", "points": [[440, -20], [440, 740]], "width": 16 },
+    { "id": "hongyi", "points": [[-440, -20], [-440, 740]], "width": 16 },
+    { "id": "mingde", "points": [[-440, 220], [440, 220]], "width": 12 },
+    { "id": "wusheng", "points": [[0, 0], [0, 270]], "width": 18 },
+    { "id": "zhengxin", "points": [[-190, 0], [-190, 620]], "width": 12 },
+    { "id": "jingji", "points": [[-440, 710], [440, 710]], "width": 12 }
+  ],
+  "water": [
+    [[60, 310], [76, 288], [100, 276], [132, 271], [165, 272], [195, 282], [213, 302], [215, 330], [205, 355], [186, 375], [158, 387], [125, 390], [95, 382], [72, 362], [61, 336]]
+  ],
+  "waterIslands": [
+    [[130, 320], [150, 310], [168, 318], [170, 334], [155, 344], [136, 340], [124, 330]]
+  ],
+  "plazas": [
+    {
+      "id": "gate-plaza",
+      "polygon": [[-60, 12], [60, 12], [60, 64], [-60, 64]]
+    },
+    {
+      "id": "wenhan",
+      "polygon": [[-70, 195], [70, 195], [70, 285], [-70, 285]]
+    }
+  ],
+  "tracks": [
+    { "id": "track-main", "kind": "track", "x": -260, "z": 160, "w": 100, "d": 180, "rot": 0 },
+    { "id": "field-second", "kind": "field", "x": 105, "z": 685, "w": 90, "d": 50, "rot": 0 },
+    { "id": "basketball", "kind": "basketball", "x": -150, "z": 120, "w": 60, "d": 50, "rot": 0 }
+  ],
+  "treeZones": [
+    { "id": "gate-lawn", "rect": { "x": -80, "z": 48, "w": 120, "d": 26 }, "count": 16, "seed": 11 },
+    { "id": "axis-lawn", "rect": { "x": 0, "z": 180, "w": 80, "d": 200 }, "count": 28, "seed": 12 },
+    { "id": "lake-lawn", "rect": { "x": 160, "z": 310, "w": 160, "d": 120 }, "count": 40, "seed": 13 },
+    { "id": "dorm-lawn", "rect": { "x": -160, "z": 520, "w": 260, "d": 190 }, "count": 48, "seed": 14 },
+    { "id": "east-lawn", "rect": { "x": 300, "z": 400, "w": 160, "d": 290 }, "count": 36, "seed": 15 },
+    { "id": "sports-lawn", "rect": { "x": -200, "z": 100, "w": 220, "d": 220 }, "count": 28, "seed": 16 },
+    { "id": "south-lawn", "rect": { "x": 180, "z": 680, "w": 220, "d": 50 }, "count": 20, "seed": 17 }
+  ],
+  "corridors": [
+    { "id": "corridor-west", "x": -52, "z": 40, "w": 9, "d": 46, "side": -1, "motto": "博学笃行" },
+    { "id": "corridor-east", "x": 52, "z": 40, "w": 9, "d": 46, "side": 1, "motto": "崇德尚学" }
+  ],
+  "areaLabels": [
+    { "id": "wenmai-lake", "name": "文脉湖", "x": 145, "z": 330, "y": 5 },
+    { "id": "wenhan-plaza", "name": "文翰广场", "x": 0, "z": 240, "y": 4 },
+    { "id": "south-life", "name": "南苑生活区", "x": -150, "z": 600, "y": 4 },
+    { "id": "track-main-label", "name": "第一运动场", "x": -260, "z": 160, "y": 4 },
+    { "id": "corridor-east", "name": "文化长廊", "x": 52, "z": 40, "y": 5 },
+    { "id": "corridor-west", "name": "文化长廊", "x": -52, "z": 40, "y": 5 }
+  ]
+}

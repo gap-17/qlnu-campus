@@ -1,0 +1,16 @@
+{
+  "name": "qlnu-campus-3d",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "齐鲁师范学院章丘校区 3D 校园漫游 v0.1（静态网页，无构建）",
+  "scripts": {
+    "start": "node scripts/serve.js",
+    "test": "node --test",
+    "validate": "node scripts/validate-data.js",
+    "check": "node scripts/validate-data.js && node --test tests"
+  },
+  "engines": {
+    "node": ">=20.11"
+  }
+}

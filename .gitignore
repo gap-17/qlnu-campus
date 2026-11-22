@@ -1,0 +1,36 @@
+# Godot
+.godot/
+game/build/
+export.cfg
+*.translation
+
+# Godot 导入缓存
+game/**/*.import
+
+# 下载的中文字体（体积大，按 README 自行下载）
+game/assets/fonts/*.otf
+game/assets/fonts/*.ttf
+game/assets/fonts/*.woff
+game/assets/fonts/*.woff2
+!game/assets/fonts/README.md
+
+# Blender
+blender/*.blend1
+blender/cache/
+*.blend1
+
+# 原始航拍/实拍素材（体积大、涉版权，仅本地保留，不进入公开仓库）
+齐鲁师范3D建模素材/
+
+# Web 依赖与产物
+web/node_modules/
+web/dist/
+
+# 系统 / 编辑器
+.DS_Store
+Thumbs.db
+desktop.ini
+*.tmp
+*.log
+.vscode/
+.idea/

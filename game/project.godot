@@ -1,0 +1,7 @@
+; 注意：游戏工程根目录是仓库根目录（D:\B2 qwen\qlnu-campus），
+; 请用根目录的 project.godot 打开，不要把这个文件夹当作独立 Godot 工程。
+; 本文件仅作为迁移提示，不包含 config_version，不会被 Godot 识别为工程。
+;
+; 打开方式：
+;   双击仓库根目录的 open_editor.bat
+;   或在 Godot 项目管理器中选择 D:\B2 qwen\qlnu-campus\project.godot

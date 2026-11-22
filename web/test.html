@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>校园 3D 自检 · 齐鲁师范学院</title>
+    <style>
+      :root {
+        color-scheme: dark;
+      }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: radial-gradient(1000px 600px at 20% 0%, #16282a, #070d0f 70%);
+        color: #edf2ed;
+        font-family: "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+        padding: 48px 24px 72px;
+      }
+      main {
+        max-width: 760px;
+        margin: 0 auto;
+      }
+      h1 {
+        font-size: 26px;
+        letter-spacing: 1px;
+        margin: 0 0 6px;
+      }
+      p.sub {
+        color: #9fb0aa;
+        font-size: 13px;
+        margin: 0 0 28px;
+      }
+      #summary {
+        padding: 16px 20px;
+        border-radius: 14px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(12, 22, 24, 0.7);
+        margin-bottom: 22px;
+        font-size: 14px;
+      }
+      #summary.ok {
+        border-color: rgba(126, 201, 150, 0.5);
+        color: #b8e8c7;
+      }
+      #summary.fail {
+        border-color: rgba(241, 168, 160, 0.55);
+        color: #f6c1b9;
+      }
+      ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: grid;
+        gap: 8px;
+      }
+      li {
+        display: flex;
+        gap: 12px;
+        padding: 12px 16px;
+        border-radius: 11px;
+        background: rgba(12, 22, 24, 0.62);
+        border: 1px solid rgba(255, 255, 255, 0.07);
+        font-size: 13px;
+        line-height: 1.55;
+      }
+      li .dot {
+        flex: 0 0 auto;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        margin-top: 6px;
+        background: #7ec996;
+      }
+      li.fail .dot {
+        background: #f1a8a0;
+      }
+      li .detail {
+        color: #9fb0aa;
+        display: block;
+        margin-top: 3px;
+        font-size: 12px;
+        white-space: pre-wrap;
+      }
+      a.back {
+        display: inline-block;
+        margin-top: 26px;
+        color: #f2b35c;
+        text-decoration: none;
+        font-size: 13px;
+      }
+      a.back:hover {
+        text-decoration: underline;
+      }
+    </style>
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <main>
+      <h1>校园 3D 自检</h1>
+      <p class="sub">检查数据契约、几何与碰撞算法、投影、WebGL 和模块加载。无需启动 3D 场景。</p>
+      <div id="summary">正在运行…</div>
+      <ul id="checks"></ul>
+      <a class="back" href="./index.html">返回 3D 校园</a>
+    </main>
+
+    <script type="module">
+      import * as THREE from "three";
+      import { validateCampusData } from "./src/lib/data.js";
+      import { pointInPolygon, polygonArea, rectContains, rectToPolygon } from "./src/lib/geo.js";
+      import { resolveCircleAabb } from "./src/lib/collision.js";
+      import { minimapToWorld, worldToMinimap } from "./src/lib/projection.js";
+      import { CampusWorld } from "./src/scene/world.js";
+
+      const results = [];
+      const summary = document.getElementById("summary");
+      const list = document.getElementById("checks");
+
+      function assert(condition, message) {
+        if (!condition) throw new Error(message);
+      }
+
+      async function check(name, fn) {
+        try {
+          const detail = await fn();
+          results.push({ name, ok: true, detail: detail ?? "" });
+        } catch (error) {
+          results.push({ name, ok: false, detail: error?.message ?? String(error) });
+        }
+      }
+
+      function render() {
+        summary.textContent = "";
+        const failed = results.filter((item) => !item.ok).length;
+        summary.textContent =
+          failed === 0
+            ? `全部 ${results.length} 项通过`
+            : `${results.length - failed} / ${results.length} 通过，${failed} 项失败`;
+        summary.className = failed === 0 ? "ok" : "fail";
+        document.documentElement.dataset.selftest = failed === 0 ? "pass" : "fail";
+
+        list.innerHTML = "";
+        for (const item of results) {
+          const li = document.createElement("li");
+          li.className = item.ok ? "ok" : "fail";
+          const dot = document.createElement("span");
+          dot.className = "dot";
+          const text = document.createElement("div");
+          text.textContent = item.name;
+          if (item.detail) {
+            const detail = document.createElement("span");
+            detail.className = "detail";
+            detail.textContent = item.detail;
+            text.appendChild(detail);
+          }
+          li.append(dot, text);
+          list.appendChild(li);
+        }
+      }
+
+      const [buildingsDoc, campusDoc] = await Promise.all([
+        fetch("./src/data/buildings.json").then((response) => response.json()),
+        fetch("./src/data/campus.json").then((response) => response.json())
+      ]);
+
+      await check("数据契约校验", () => {
+        const result = validateCampusData(buildingsDoc, campusDoc);
+        assert(result.ok, result.errors.join(" / "));
+        return `${buildingsDoc.buildings.length} 栋建筑，${campusDoc.roads.length} 条道路`;
+      });
+
+      await check("关键建筑完整性", () => {
+        const ids = new Set(buildingsDoc.buildings.map((building) => building.id));
+        for (const id of ["gate-north", "gate-east", "library", "gym", "teach-1", "dorm-1"]) {
+          assert(ids.has(id), `缺少 ${id}`);
+        }
+        return "北门 / 东门 / 图书馆 / 体育馆 / 教学 / 宿舍 均在数据中";
+      });
+
+      await check("矩形与多边形几何", () => {
+        const polygon = rectToPolygon({ x: 0, z: 0, w: 10, d: 4, rot: 0 });
+        assert(pointInPolygon(0, 0, polygon), "中心点应在矩形内");
+        assert(!pointInPolygon(6, 0, polygon), "外部点不应在矩形内");
+        assert(Math.abs(polygonArea(polygon) - 40) < 1e-9, "面积应为 40");
+        return "面积、内外判定正确";
+      });
+
+      await check("碰撞推出", () => {
+        const box = { minX: -5, maxX: 5, minZ: -5, maxZ: 5 };
+        const hit = resolveCircleAabb({ x: 5.4, z: 0 }, 0.5, box);
+        assert(hit.hit, "应检测到碰撞");
+        assert(Math.abs(hit.x - 5.5) < 1e-6, `推出位置 x=${hit.x}`);
+        return "沿最近边推出";
+      });
+
+      await check("小地图投影可逆", () => {
+        const size = { width: 240, height: 210 };
+        const point = worldToMinimap(120, 400, campusDoc.bounds, size);
+        const back = minimapToWorld(point.u, point.v, campusDoc.bounds, size);
+        assert(Math.abs(back.x - 120) < 1e-6 && Math.abs(back.z - 400) < 1e-6, "往返误差过大");
+        return "世界坐标 ↔ 像素一致";
+      });
+
+      await check("WebGL 上下文", () => {
+        const canvas = document.createElement("canvas");
+        const renderer = new THREE.WebGLRenderer({ canvas, antialias: false });
+        assert(renderer.getContext(), "无法创建 WebGL 上下文");
+        const version = renderer.capabilities.isWebGL2 ? "WebGL2" : "WebGL1";
+        renderer.dispose();
+        return version;
+      });
+
+      await check("Three.js 与场景模块加载", () => {
+        assert(THREE.REVISION, "Three.js 未加载");
+        assert(typeof CampusWorld === "function", "CampusWorld 未导出");
+        return `three r${THREE.REVISION} · CampusWorld 就绪`;
+      });
+
+      await check("运动场地与树木数据", () => {
+        assert(campusDoc.tracks.length >= 3, "运动场地不足");
+        assert(campusDoc.treeZones.length >= 5, "树木分区不足");
+        const total = campusDoc.treeZones.reduce((sum, zone) => sum + zone.count, 0);
+        return `${campusDoc.tracks.length} 块场地 · 计划 ${total} 棵树`;
+      });
+
+      await check("建筑入口贴近轮廓", () => {
+        for (const building of buildingsDoc.buildings) {
+          if (!building.entrance || !building.rect) continue;
+          const rect = building.rect;
+          const padded = { ...rect, w: rect.w + 16, d: rect.d + 16 };
+          assert(
+            rectContains(padded, building.entrance.x, building.entrance.z),
+            `${building.name} 的入口距轮廓超过 8m`
+          );
+        }
+        return "全部入口在轮廓 8m 范围内";
+      });
+
+      window.__CHECK_RESULTS__ = results;
+      render();
+    </script>
+  </body>
+</html>
